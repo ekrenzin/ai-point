@@ -10,7 +10,8 @@
     "clear-docker": "docker stop eankrenzin/open-site && docker rm open-site",
     "build-docker": "docker build -t open-site .",
     "run-docker": "docker run -p 8080:8080 -d open-site",
-    "restart-docker": "npm run clear-docker && npm run build-docker && npm run run-docker"
+    "restart-docker": "npm run clear-docker && npm run build-docker && npm run run-docker",
+    "start-docker": "npm run build-docker && npm run run-docker"
   },
   "repository": {
     "type": "git",
