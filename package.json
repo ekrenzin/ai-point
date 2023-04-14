@@ -1,0 +1,31 @@
+{
+  "name": "open-site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cross-env NODE_ENV=test mocha --recursive --exit",
+    "dev": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ekrenzin/open-site.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ekrenzin/open-site/issues"
+  },
+  "homepage": "https://github.com/ekrenzin/open-site#readme",
+  "dependencies": {
+    "assert": "^2.0.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "openai": "^3.2.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "mocha": "^10.2.0",
+    "supertest": "^6.3.3"
+  }
+}
