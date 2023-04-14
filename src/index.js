@@ -13,7 +13,8 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const basePrompt = "Analyze this HTML. Respond with a title, and summary of the article. Include links to any images or videos in an array. Format in a JSON object. {title, summary, images, videos}. The summary should be about the content of the article, not the content itself. Explain the purpose of the page, but do not summarize it."
+const basePrompt = "Analyze this HTML. Respond with a title, and summary of the article. Include links to any images or videos in an array. "
+const formatPrompt = " Format in a JSON object. {title, summary, images, videos}. The summary should be about the content of the article, not the content itself. Explain the purpose of the page, but do not summarize it. Your response should be a JSON object with no additional characters."
 
 app.use(express.json()); // Make sure this line is present to parse the incoming JSON request body
 
@@ -29,7 +30,7 @@ app.post('/', async function (req, res) {
     const body = parseOutHtml(html)
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: basePrompt + body,
+      prompt: basePrompt + body + formatPrompt,
       temperature: 0.6,
       max_tokens: 500,
     });
