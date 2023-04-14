@@ -5,7 +5,12 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "cross-env NODE_ENV=test mocha --recursive --exit"
+    "test": "cross-env NODE_ENV=test mocha --recursive --exit",
+    "ssh": "ssh -i opensite.pem ubuntu@ec2-35-86-117-103.us-west-2.compute.amazonaws.com",
+    "clear-docker": "docker stop eankrenzin/open-site && docker rm open-site",
+    "build-docker": "docker build -t open-site .",
+    "run-docker": "docker run -p 8080:8080 -d open-site",
+    "restart-docker": "npm run clear-docker && npm run build-docker && npm run run-docker"
   },
   "repository": {
     "type": "git",
