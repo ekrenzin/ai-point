@@ -29,7 +29,6 @@ app.post('/', async function (req, res) {
     const html = await htmlRes.text()
     const body = parseOutHtml(html)
     const fullPrompt = basePrompt + body + formatPrompt
-    console.log({fullPrompt})
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: fullPrompt,
@@ -37,7 +36,6 @@ app.post('/', async function (req, res) {
       max_tokens: 500,
     });
     const text = completion.data.choices[0].text
-    console.log(text)
     res.status(200).json({ result: text });
   } catch (error) {
     console.error(error);
