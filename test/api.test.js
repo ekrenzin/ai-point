@@ -1,11 +1,15 @@
 import request from 'supertest';
 import {app} from '../src/index.js';
-
-const url = "https://markdown-cloud.devon.workers.dev/api/documents/b1ff2dc8-edef-471b-a987-9f671327d943"
+let urls = [
+  'https://pages.markdown.space/dv-community/1681456254607',
+  'https://pages.markdown.space/dv-community/1681427975412',
+  'https://pages.markdown.space/dv-community/1681495769038',
+]
 //test the localhost server at 3000 port
 describe('API', async function() {
     this.timeout(50000); // Adjust the number to a suitable value (in milliseconds)
     it('should return a completion', async function() {
+      for (let url of urls)
         await request(app)
         .post('/')
         .send({

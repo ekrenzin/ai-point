@@ -28,9 +28,11 @@ app.post('/', async function (req, res) {
     const htmlRes = await fetch(url)
     const html = await htmlRes.text()
     const body = parseOutHtml(html)
+    const fullPrompt = basePrompt + body + formatPrompt
+    console.log({fullPrompt})
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: basePrompt + body + formatPrompt,
+      prompt: fullPrompt,
       temperature: 0.6,
       max_tokens: 500,
     });
@@ -54,10 +56,14 @@ app.post('/', async function (req, res) {
   }
 })
 
+
 function parseOutHtml(html) {
 
   // Load the HTML string into cheerio
   const $ = Cheerio.load(html);
+  $('script').remove();
+  $('nav').remove();
+  
   const bodyContent = $('body').html();
   return bodyContent
 }
