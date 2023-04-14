@@ -20,7 +20,7 @@ node_modules/
 *.lock
 
 # Build files
-dist/
+build/
 
 # IDE files
 .vscode/
@@ -29,3 +29,6 @@ dist/
 
 # macOS files
 .DS_Store
+
+
+opensite.pem
