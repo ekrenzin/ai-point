@@ -1,0 +1,28 @@
+{
+    "class": "Website",
+    "description": "A website",
+    "properties": [
+      {
+        "name": "url",
+        "dataType": ["text"],
+        "description": "The URL of the site"
+      },
+      {
+        "name": "title",
+        "dataType": ["text"],
+        "description": "The title of the site"
+      },
+      {
+        "name": "summary",
+        "dataType": ["text"],
+        "description": "A summary of the site"
+      },
+      {
+        "name": "html",
+        "dataType": ["text"],
+        "description": "A summary of the site"
+      }
+    ],
+    "vectorizer": "text2vec-openai"
+  
+  }

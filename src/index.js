@@ -3,6 +3,9 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import Cheerio from 'cheerio';
 import { Configuration, OpenAIApi } from 'openai';
+import weaviate from 'weaviate-ts-client';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
 dotenv.config();
 
@@ -13,6 +16,16 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+const client = weaviate.client({
+  scheme: 'https',
+  host: 'open-site-i8ifcebl.weaviate.network',
+  headers: {
+    'X-OpenAI-Api-Key': process.env.OPENAI_API_KEY,
+    'Authorization': 'Bearer ' + process.env.WEAVIATE_API_KEY,
+  },
+});
+
+
 const basePrompt = "Analyze this HTML. Respond with a title, and summary of the article. Include links to any images or videos in an array. "
 const formatPrompt = " Format in a JSON object. {title, summary, images, videos}. The summary should be about the content of the article, not the content itself. Explain the purpose of the page, but do not summarize it. Your response should be a JSON object with no additional characters."
 
@@ -21,7 +34,6 @@ app.use(express.json()); // Make sure this line is present to parse the incoming
 app.post('/', async function (req, res) {
 
   try {
-    console.log(req.body)
     //get the url from the body
     const url = req.body.url
     //get the html from the url
@@ -38,22 +50,44 @@ app.post('/', async function (req, res) {
     const text = completion.data.choices[0].text
     res.status(200).json({ result: text });
   } catch (error) {
-    console.error(error);
-    // Consider adjusting the error handling logic for your use case
-    if (error.response) {
-      console.error(error.response.status, error.response.data);
-      res.status(error.response.status).json(error.response.data);
-    } else {
-      console.error(`Error with OpenAI API request: ${error.message}`);
-      res.status(500).json({
-        error: {
-          message: 'An error occurred during your request.',
-        }
-      });
-    }
+    handleError(error, res)
   }
 })
 
+app.post('/identify', async function (req, res) {
+  try {
+    const newR = await client
+      .schema
+      .getter()
+      .do()
+    console.log(newR)
+    
+    res.status(200);
+
+  } catch (error) {
+    handleError(error, res)
+  }
+})
+
+function addSiteToDB(site) {
+  //site is a url, 
+}
+
+function handleError(error, res) {
+  console.error(error);
+  // Consider adjusting the error handling logic for your use case
+  if (error.response) {
+    console.error(error.response.status, error.response.data);
+    res.status(error.response.status).json(error.response.data);
+  } else {
+    console.error(`Error with OpenAI API request: ${error.message}`);
+    res.status(500).json({
+      error: {
+        message: 'An error occurred during your request.',
+      }
+    });
+  }
+}
 
 function parseOutHtml(html) {
 
@@ -61,7 +95,7 @@ function parseOutHtml(html) {
   const $ = Cheerio.load(html);
   $('script').remove();
   $('nav').remove();
-  
+
   const bodyContent = $('body').html();
   return bodyContent
 }
