@@ -1,77 +1,33 @@
 import express from 'express';
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
-import Cheerio from 'cheerio';
-import { Configuration, OpenAIApi } from 'openai';
-import weaviate from 'weaviate-ts-client';
+import { createCompletion } from './openAI.js';
+// import { splitStringIntoChunks, mergeCloseChunksIntoString } from './utils/textParser.js';
+
+
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
-dotenv.config();
-
-
 const app = express()
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-const client = weaviate.client({
-  scheme: 'https',
-  host: 'open-site-i8ifcebl.weaviate.network',
-  headers: {
-    'X-OpenAI-Api-Key': process.env.OPENAI_API_KEY,
-    'Authorization': 'Bearer ' + process.env.WEAVIATE_API_KEY,
-  },
-});
+app.use(express.json());
+app.listen(8080)
 
 
-const basePrompt = "Analyze this HTML. Respond with a title, and summary of the article. Include links to any images or videos in an array. "
-const formatPrompt = " Format in a JSON object. {title, summary, images, videos}. The summary should be about the content of the article, not the content itself. Explain the purpose of the page, but do not summarize it. Your response should be a JSON object with no additional characters."
-
-app.use(express.json()); // Make sure this line is present to parse the incoming JSON request body
-
-app.post('/', async function (req, res) {
-
+app.post('/api/actions', async function (req, res) {
   try {
-    //get the url from the body
-    const url = req.body.url
-    //get the html from the url
-    const htmlRes = await fetch(url)
-    const html = await htmlRes.text()
-    const body = parseOutHtml(html)
-    const fullPrompt = basePrompt + body + formatPrompt
-    const completion = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: fullPrompt,
-      temperature: 0.6,
-      max_tokens: 500,
-    });
-    const text = completion.data.choices[0].text
-    res.status(200).json({ result: text });
+    const { content, action } = req.body
+    const data = []
+    const prompt = getPrompt(action)
+    const completion = await createCompletion(prompt, content)
+    data.push(completion.data.choices[0].text)
+    res.status(200).json({ result: data.join('') });
   } catch (error) {
     handleError(error, res)
   }
 })
 
-app.post('/identify', async function (req, res) {
-  try {
-    const newR = await client
-      .schema
-      .getter()
-      .do()
-    console.log(newR)
-    
-    res.status(200);
-
-  } catch (error) {
-    handleError(error, res)
-  }
-})
-
-function addSiteToDB(site) {
-  //site is a url, 
+function getPrompt(action) {
+  return require(`./prompts/${action}.json`)
 }
+
 
 function handleError(error, res) {
   console.error(error);
@@ -89,18 +45,6 @@ function handleError(error, res) {
   }
 }
 
-function parseOutHtml(html) {
-
-  // Load the HTML string into cheerio
-  const $ = Cheerio.load(html);
-  $('script').remove();
-  $('nav').remove();
-
-  const bodyContent = $('body').html();
-  return bodyContent
-}
-
-app.listen(8080)
 
 export {
   app

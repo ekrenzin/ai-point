@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha --recursive --exit",
-    "ssh": "ssh -A ubuntu@ec2-35-86-117-103.us-west-2.compute.amazonaws.com",
+    "ssh": "ssh -v ec2-35-86-117-103.us-west-2.compute.amazonaws.com",
     "ssh-add-git": "Host 35.86.117.103 ForwardAgent yes",
     "clear-docker": "docker stop eankrenzin/open-site && docker rm open-site",
     "build-docker": "docker build -t open-site .",

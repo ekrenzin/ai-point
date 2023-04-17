@@ -1,0 +1,4 @@
+{
+    "base": "Create JSDoc comments for the following functions",
+    "end": "End of the code. Respond only with the JSDOC comments"
+}   
