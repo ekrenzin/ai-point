@@ -32,7 +32,6 @@ build/
 
 
 opensite.pem
-test.js
 
 github_ssh
 github_ssh.pub

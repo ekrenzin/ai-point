@@ -8,8 +8,12 @@ const require = createRequire(import.meta.url);
 
 const app = express()
 app.use(express.json());
-app.listen(8080)
 
+try {
+  app.listen(8080)
+} catch (e) {
+  app.listen(3000)
+}
 
 app.post('/api/actions', async function (req, res) {
   try {
