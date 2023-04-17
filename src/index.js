@@ -17,9 +17,8 @@ try {
 
 app.post('/api/actions', async function (req, res) {
   try {
-    const body = JSON.parse(req.body)
+    const body = req.body
     const { content, action } = body
-    console.log(content, action, body)
     const data = []
     const prompt = getPrompt(action)
     const completion = await createCompletion(prompt, content)

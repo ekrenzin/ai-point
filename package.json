@@ -14,7 +14,7 @@
     "run-docker": "docker run -p 8080:8080 -d open-site",
     "restart-docker": "npm run clear-docker && npm run build-docker && npm run run-docker",
     "start-docker": "npm run build-docker && npm run run-docker",
-    "logs-docker": "docker logs -f $(docker ps -aq)"
+    "logs-docker": "docker logs -f $(docker ps -q)"
   },
   "repository": {
     "type": "git",
