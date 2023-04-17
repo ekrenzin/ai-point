@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const url = "http://ec2-44-226-228-62.us-west-2.compute.amazonaws.com:8080/api/action"
+const url = "http://ec2-44-226-228-62.us-west-2.compute.amazonaws.com:8080/api/actions"
 
 async function postData(){
     const response = await fetch(url, {
