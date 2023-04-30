@@ -35,3 +35,5 @@ opensite.pem
 
 github_ssh
 github_ssh.pub
+
+/dist
