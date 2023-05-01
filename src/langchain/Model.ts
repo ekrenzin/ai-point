@@ -19,8 +19,8 @@ class LangChainModel {
    */
   private constructor() {
     const model = new OpenAI({ temperature: 0.9, modelName: 'text-davinci-003', maxTokens: 500 })
-    this.model = model
     const embeddings = new OpenAIEmbeddings({ })
+    this.model = model
     this.embeddings = embeddings
   }
 

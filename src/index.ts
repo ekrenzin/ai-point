@@ -1,7 +1,11 @@
 import express, { Request, Response } from 'express';
 import { LangChainModel } from './langchain/Model';
+import { Memorable } from './langchain/Memorable';
 import dotenv from 'dotenv';
 import { OpenAI } from "langchain/llms/openai";
+import { extractCredentials } from './middleware/credentials';
+
+
 dotenv.config();
 
 LangChainModel.init();
@@ -52,6 +56,31 @@ function handleError(error: Error, res: Response) {
     }
   });
 }
+
+app.post('/api/actions/memorable', async function (req: Request, res: Response) {
+  try {
+    const credentials = extractCredentials(req);
+    const body = req.body;
+    const { content } = body;
+    const memorable = new Memorable(credentials);
+    const data = await memorable.chainCall(content);
+    res.status(200).json({ result: data });
+  } catch (error: any) {
+    handleError(error, res);
+  }
+});
+
+app.delete('/api/actions/memorable', async function (req: Request, res: Response) {
+  try {
+    const credentials = extractCredentials(req);
+    const memorable = new Memorable(credentials);
+    await memorable.forget();
+    res.status(200).json({ result: 'success' });
+  } catch (error: any) {
+    handleError(error, res);
+  }
+});
+
 
 export {
   app
