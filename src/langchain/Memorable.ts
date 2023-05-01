@@ -19,8 +19,7 @@ class Memorable {
   public constructor(credentials: MemoryCredentials) {
     const model = new OpenAI({
       temperature: 0.9,
-      modelName: "text-davinci-003",
-      maxTokens: 500,
+      modelName: "text-davinci-003"
     });
 
     this.model = model;
@@ -49,7 +48,6 @@ class Memorable {
       llm: this.model,
       memory: memory,
     });
-    
     const res = await chain.call({ input });
     const response = res.response;
     return response;
