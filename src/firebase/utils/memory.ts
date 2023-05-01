@@ -1,14 +1,14 @@
 import { db } from "../firebase";
 import { MemoryCredentials, interaction } from "../../types";
 
-
 async function addMemory(
   credentials: MemoryCredentials,
   data: interaction
 ): Promise<string> {
   const { uid, chain } = credentials;
   const memoryRef = db.collection(`memory/${uid}/chains/${chain}/interactions`);
-  const res = await memoryRef.add(data);
+  const newData = { ...data, timestamp: Date.now() };
+  const res = await memoryRef.add(newData);
   return res.id;
 }
 
@@ -17,14 +17,15 @@ async function getMemory(
 ): Promise<interaction[]> {
   const { uid, chain } = credentials;
   const memoryRef = db.collection(`memory/${uid}/chains/${chain}/interactions`);
-  const snapshot = await memoryRef.get();
+  const snapshot = await memoryRef.orderBy('timestamp', 'desc').get();
   if (snapshot.empty) {
     return [];
   }
   const interactions: interaction[] = [];
-  snapshot.forEach((doc) => {
-    interactions.push(doc.data() as interaction);
-  });
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    interactions.push(data as interaction);
+  }
   return interactions;
 }
 

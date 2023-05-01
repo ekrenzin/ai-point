@@ -5,7 +5,12 @@ import { getMemory, addMemory, deleteMemory } from "../firebase/utils/memory";
 import { HumanChatMessage, AIChatMessage } from "langchain/schema";
 import { ChatMessageHistory } from "langchain/memory";
 import { MemoryCredentials, interaction } from "../types";
-
+import {
+  ChatPromptTemplate,
+  HumanMessagePromptTemplate,
+  SystemMessagePromptTemplate,
+  MessagesPlaceholder,
+} from "langchain/prompts";
 
 class Memorable {
   private credentials: MemoryCredentials;
@@ -30,15 +35,21 @@ class Memorable {
       pastMessages.push(new HumanChatMessage(message));
       pastMessages.push(new AIChatMessage(response));
     }
-    console.log({ pastMessages: pastMessages });
     const chatHistory = new ChatMessageHistory(pastMessages);
-    const memory = new BufferMemory({ chatHistory });
+    const memory = new BufferMemory({ 
+        chatHistory,
+     });
     return memory;
   }
 
   public async chainCall(input: string): Promise<string> {
     const memory = await this.remember();
-    const chain = new ConversationChain({ llm: this.model, memory: memory });
+    
+    const chain = new ConversationChain({
+      llm: this.model,
+      memory: memory,
+    });
+    
     const res = await chain.call({ input });
     const response = res.response;
     return response;

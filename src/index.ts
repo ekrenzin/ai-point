@@ -31,9 +31,7 @@ app.post('/api/actions', async function (req: Request, res: Response) {
     const { content } = body;
     // const model = LangChainModel.getModel();
     const model = new OpenAI({ temperature: 0.9, maxConcurrency: 1, modelName: 'text-davinci-003', maxTokens: 500 });
-    console.log(model)
     const data = await model.call(content);
-    console.log(data);
     // const completion = await model.generatePrompt(prompt)
     // data.push(completion || 'MISSING');
     res.status(200).json({ result: data });
@@ -64,6 +62,7 @@ app.post('/api/actions/memorable', async function (req: Request, res: Response) 
     const { content } = body;
     const memorable = new Memorable(credentials);
     const data = await memorable.chainCall(content);
+    await memorable.memorize({ message: content, response: data });
     res.status(200).json({ result: data });
   } catch (error: any) {
     handleError(error, res);
