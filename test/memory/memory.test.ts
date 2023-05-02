@@ -1,8 +1,8 @@
 import 'mocha';
 import request from 'supertest';
-import { app } from '../src/index';
+import { app } from '../../src/index';
 
-describe.skip('API - Memory', function () {
+describe('API - Memory', function () {
   this.timeout(15000);
   it('should greet me', async function () {
     const res = await request(app)

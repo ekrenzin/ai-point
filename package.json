@@ -6,6 +6,9 @@
   "type": "commonjs",
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha --recursive --exit",
+    "test:memory": "cross-env NODE_ENV=test mocha test/memory/ --exit",
+    "test:dinner": "cross-env NODE_ENV=test mocha test/dinner/ --exit",
+    "test:trivia": "cross-env NODE_ENV=test mocha test/trivia/ --exit",
     "ssh": "ssh -v -A -i opensite.pem ubuntu@ec2-44-226-228-62.us-west-2.compute.amazonaws.com",
     "ssh-add-git": "Host 44.226.228.62 ForwardAgent yes",
     "ssh-mac": "ssh-add --apple-use-keychain ~/.ssh/id_ed25519",

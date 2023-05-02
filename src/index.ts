@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { LangChainModel } from './langchain/Model';
-import { Memorable } from './langchain/Memorable';
+import { MemorableChat } from './langchain/MemorableChat';
 import dotenv from 'dotenv';
 import { OpenAI } from "langchain/llms/openai";
 import { extractCredentials } from './middleware/credentials';
@@ -13,6 +13,12 @@ LangChainModel.init();
 const app = express();
 
 app.use(express.json());
+app.use("api/memorable/:category", (req, res, next) => {
+  console.log("middleware");
+  const credentials = extractCredentials(req);
+  req.body.credentials = credentials;
+  next();
+});
 
 try {
   app.listen(8080);
@@ -55,12 +61,10 @@ function handleError(error: Error, res: Response) {
   });
 }
 
-app.post('/api/actions/memorable', async function (req: Request, res: Response) {
+app.post('api/memorable/:category', async function (req: Request, res: Response) {
   try {
-    const credentials = extractCredentials(req);
-    const body = req.body;
-    const { content } = body;
-    const memorable = new Memorable(credentials);
+    const { content, credentials } = req.body;
+    const memorable = new MemorableChat(credentials);
     const data = await memorable.chainCall(content);
     await memorable.memorize({ message: content, response: data });
     res.status(200).json({ result: data });
@@ -69,16 +73,17 @@ app.post('/api/actions/memorable', async function (req: Request, res: Response) 
   }
 });
 
-app.delete('/api/actions/memorable', async function (req: Request, res: Response) {
+app.delete('api/memorable/:category', async function (req: Request, res: Response) {
   try {
-    const credentials = extractCredentials(req);
-    const memorable = new Memorable(credentials);
+    const { credentials } = req.body;
+    const memorable = new MemorableChat(credentials);
     await memorable.forget();
     res.status(200).json({ result: 'success' });
   } catch (error: any) {
     handleError(error, res);
   }
 });
+
 
 
 export {

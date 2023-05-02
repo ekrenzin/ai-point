@@ -1,16 +1,16 @@
 import "mocha";
 import request from "supertest";
-import { app } from "../src/index";
+import { app } from "../../src/index";
 
-describe.skip("API - Trivia", function () {
+describe("API - Threejs", function () {
   this.timeout(15000);
 
-  it("Should return a new trivia question", async function () {
+  it("Should write threejs boilerplate", async function () {
     const res = await request(app)
       .post("/api/actions/memorable")
       .send({
-        content: "give me a trivia question.",
-        id: "trivia",
+        content: "give me boilerplate for a threejs scene in html & js. Respond only with code.",
+        id: "threejs",
         uid: "1234",
       })
       .expect(200)
@@ -19,13 +19,13 @@ describe.skip("API - Trivia", function () {
     console.log(result);
   });
 
-  it("Should answer the trivia question", async function () {
-    const res = await request(app)
 
+  it("Add code for a cube", async function () {
+    const res = await request(app)
         .post("/api/actions/memorable")
         .send({
-            content: "what is the answer?",
-            id: "trivia",
+            content: "write a function which adds a cube to the scene",
+            id: "threejs",
             uid: "1234",
         })
         .expect(200)
@@ -34,11 +34,11 @@ describe.skip("API - Trivia", function () {
     console.log(result);
     });
     
-  it("Should wipe the game", async function () {
+  it("Should wipe the scene", async function () {
     await request(app)
       .delete("/api/actions/memorable")
       .send({
-        id: "trivia",
+        id: "threejs",
         uid: "1234",
       })
       .expect(200)

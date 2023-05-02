@@ -1,56 +1,30 @@
-import { BufferMemory } from "langchain/memory";
-import { OpenAI } from "langchain/llms/openai";
-import { ConversationChain } from "langchain/chains";
+import { BufferWindowMemory } from "langchain/memory";
 import { getMemory, addMemory, deleteMemory } from "../firebase/utils/memory";
-import { HumanChatMessage, AIChatMessage } from "langchain/schema";
 import { ChatMessageHistory } from "langchain/memory";
 import { MemoryCredentials, interaction } from "../types";
-import {
-  ChatPromptTemplate,
-  HumanMessagePromptTemplate,
-  SystemMessagePromptTemplate,
-  MessagesPlaceholder,
-} from "langchain/prompts";
 
 class Memorable {
   private credentials: MemoryCredentials;
-  private model: OpenAI;
 
   public constructor(credentials: MemoryCredentials) {
-    const model = new OpenAI({
-      temperature: 0.9,
-      modelName: "text-davinci-003"
-    });
-
-    this.model = model;
     this.credentials = credentials;
   }
 
-  private async remember(): Promise<BufferMemory> {
+  public async remember(k: number = 10): Promise<BufferWindowMemory> {
     const memRecords = await getMemory(this.credentials);
-    let pastMessages: any[] = [];
+    const chatHistory = new ChatMessageHistory();
     for (const interaction of memRecords) {
-      const { message, response } = interaction;
-      pastMessages.push(new HumanChatMessage(message));
-      pastMessages.push(new AIChatMessage(response));
+      const { message, response, timestamp } = interaction;
+      chatHistory.addAIChatMessage(response);
+      chatHistory.addUserMessage(message);
     }
-    const chatHistory = new ChatMessageHistory(pastMessages);
-    const memory = new BufferMemory({ 
-        chatHistory,
-     });
-    return memory;
-  }
-
-  public async chainCall(input: string): Promise<string> {
-    const memory = await this.remember();
-    
-    const chain = new ConversationChain({
-      llm: this.model,
-      memory: memory,
+    const memory = new BufferWindowMemory({
+      chatHistory,
+      k,
+      returnMessages: true,
+      memoryKey: "history",
     });
-    const res = await chain.call({ input });
-    const response = res.response;
-    return response;
+    return memory;
   }
 
   public async memorize(data: interaction): Promise<void> {
