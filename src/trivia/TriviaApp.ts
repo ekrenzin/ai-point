@@ -7,14 +7,12 @@ async function triviaPost(req: Request, res: Response) {
     const bot = new TriviaBot(credentials);
     if (method === "question") {
       const question = await bot.generateNewQuestion();
-      res.status(200).json({ result: question });
+      res.status(200).json({ question });
     } else if (method === "answer") {
-      const answer = req.body;
-      const result = await bot.checkAnswer(answer);
+      const answer = req.body.answer;
+      const question = req.body.question;
+      const result = await bot.checkAnswer(question, answer);
       res.status(200).json({ result });
-    } else if (method === "repeat") {
-      const question = await bot.repeatQuestion();
-      res.status(200).json({ result: question });
     } else if (method === "score") {
       const score = await bot.getScore();
       res.status(200).json({ result: score });

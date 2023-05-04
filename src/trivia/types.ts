@@ -13,19 +13,32 @@ interface TriviaScore {
     correct: boolean;
     answer: string;
   }
-  
-  interface TriviaQuestion {
+
+  interface TriviaPrompt {
     question: string;
     correct_answer: string;
     context: string;
     title: string;
     choices: string[];
     rating: number;
+    topic: string;
   }
   
-  interface TriviaAnswer {
-    question: TriviaQuestion;
-    answer: string;
+  interface TriviaQuestion {
+    question: string;
+    context: string;
+    topic: string;
+    title: string;
+    rating: number;
+    choices?: string[];
+    id?: number;
   }
 
-  export { TriviaScore, TriviaResult, TriviaQuestion, TriviaAnswer }
+
+  interface TriviaAnswer {
+    question_id: number;
+    choices: string[];
+    correct_answer: string;
+  }
+
+  export { TriviaScore, TriviaResult, TriviaPrompt, TriviaQuestion, TriviaAnswer }

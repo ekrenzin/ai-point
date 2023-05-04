@@ -3,12 +3,12 @@ import { MemoryCredentials } from "../types";
 import { WikiBot } from "./WikiBot";
 import { LangChainModel } from "../langchain/Model";
 import {
+  TriviaPrompt,
   TriviaQuestion,
-  TriviaAnswer,
   TriviaResult,
   TriviaScore,
 } from "./types";
-import { storeTriviaQuestion } from "../supabase/supabase";
+import { storeTriviaQuestion, getTriviaAnswer } from "../supabase/supabase";
 
 /**
  * Class representing a TriviaBot.
@@ -87,6 +87,22 @@ class TriviaBot {
   }
 
   /**
+   * Generates the topic of a Trivia question based on the provided question and context using the LangChainModel.
+   * @private
+   * @param {string} context - The context to use for generating the topic.
+   * @returns {Promise<string>} - A Promise that resolves to the generated topic.
+   * @memberof TriviaBot
+   * @private
+   */
+  private async generateTopic(context: string): Promise<string> {
+    const examples = "World History, Science, Geography, Pop Culture, Literature, Art, Sports, Music, Film, Food and Drink"
+    const topic = await this.complete(
+      `Use this context to come up with a trivia topic [${context}]. Here are some examples: ${examples}. Respond ONLY with a 1 word TRIVIA topic that the context falls into. Make the topic BROAD so it would apply to other questions.`
+    );
+    return topic;
+  }
+
+  /**
    * Generates an array of incorrect answers to a Trivia question.
    *
    * @private
@@ -139,21 +155,24 @@ class TriviaBot {
    * Generates a new TriviaQuestion by retrieving a random page from the WikiBot, generating a question, generating a correct answer, generating incorrect answers, randomizing the answer choices, and storing the question in the database.
    *
    * @public
-   * @returns {Promise<TriviaQuestion>} - A Promise that resolves to the generated TriviaQuestion.
+   * @returns {Promise<TriviaQuestion>} - A Promise that resolves to the generated TriviaQuestion ID.
    */
   public async generateNewQuestion(): Promise<TriviaQuestion> {
     const { pageTitle, pageData } = await this.getRandomWikiPageData();
     const question = await this.generateQuestion(pageData);
+    const topic = await this.generateTopic(pageData);
     const answer = await this.generateCorrectAnswer(question, pageData);
-    const answerChoices = await this.generateIncorrectAnswers(
+    const incorrectAnswerChoices = await this.generateIncorrectAnswers(
       question,
       answer,
       4
     );
-    const randomizedChoices = this.randomizeChoices(answerChoices);
+    const answers = [answer, ...incorrectAnswerChoices]
+    const randomizedChoices = this.randomizeChoices(answers);
 
-    const triviaQuestion: TriviaQuestion = {
+    const triviaPrompt: TriviaPrompt = {
       question,
+      topic,
       correct_answer: answer,
       context: pageData,
       title: pageTitle,
@@ -161,42 +180,32 @@ class TriviaBot {
       rating: 100,
     };
 
-    await storeTriviaQuestion(triviaQuestion);
-    return triviaQuestion;
+    const questionWithId = await storeTriviaQuestion(triviaPrompt);
+    questionWithId.choices = randomizedChoices;
+
+    return questionWithId;
   }
 
-  /**
-   * Asks the user to repeat the most recently asked Trivia question.
-   *
-   * @public
-   * @returns {Promise<string>} - A Promise that resolves to the user's response.
-   */
-  public async repeatQuestion(): Promise<string> {
-    const response = await this.complete(
-      "Repeat the question you asked most recently."
-    );
-    return response;
-  }
 
   /**
-   * Checks if the user's answer to the previous Trivia question is correct, updates the user's score, and returns the TriviaResult.
+   * Checks if the user's answer to a Trivia question is correct, updates the user's score, and returns the TriviaResult.
    *
    * @public
-   * @param {TriviaAnswer} triviaAnswer - The TriviaAnswer object containing the previous question and user's answer.
+   * @param {number} question - The TriviaQuestion object containing the question.
+   * @param {string} answer - The user's answer to the question.
    * @returns {Promise<TriviaResult>} - A Promise that resolves to the TriviaResult object containing the user's score, whether the answer is correct or not, and the correct answer.
    */
-  public async checkAnswer(triviaAnswer: TriviaAnswer): Promise<TriviaResult> {
-    const previousQuestion = triviaAnswer.question;
-    const userAnswer = triviaAnswer.answer;
+  public async checkAnswer(question: number, answer: string): Promise<TriviaResult> {
+    const triviaAnswer = await getTriviaAnswer(question);
 
-    const correct = previousQuestion.correct_answer === userAnswer;
+    const correct = triviaAnswer.correct_answer === answer;
 
     const oldScore = await this.getScore();
     const newScore = await this.updateScore(oldScore, correct);
     const result: TriviaResult = {
       score: newScore,
       correct,
-      answer: previousQuestion.correct_answer,
+      answer: triviaAnswer.correct_answer,
     };
 
     return result;
