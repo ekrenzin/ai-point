@@ -1,7 +1,7 @@
 import "mocha";
 import request from "supertest";
 import { app } from "../../src/index";
-import { TriviaQuestion } from "../../src/trivia/TriviaTypes";
+import { TriviaQuestion } from "../../src/bots/trivia/TriviaTypes";
 
 describe("API - Trivia", function () {
   this.timeout(60000);

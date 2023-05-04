@@ -1,15 +1,15 @@
-import { db } from "../firebase/firebase";
-import { MemoryCredentials } from "../types";
-import { WikiBot } from "./WikiBot";
-import { LangChainModel } from "../langchain/Model";
+import { MemoryCredentials } from "../../types";
+import { WikiBot } from "../wiki/WikiBot";
+import { LangChainModel } from "../../langchain/Model";
 import {
   TriviaPrompt,
   TriviaQuestion,
   TriviaResult,
   TriviaScore,
 } from "./TriviaTypes";
-import { WikiPage } from "./WikiTypes";
-import { storeTriviaQuestion, getTriviaAnswer } from "../supabase/supabase";
+import { WikiPage } from "../wiki/WikiTypes";
+import { storeTriviaQuestion, getTriviaAnswer } from "../../supabase/supabase";
+import { ImageBot } from "../images/ImageBot";
 
 /**
  * Class representing a TriviaBot.
@@ -18,6 +18,7 @@ class TriviaBot {
   private wikiBot: WikiBot;
   private credentials: MemoryCredentials;
   private model: LangChainModel;
+  private imageBot: ImageBot;
 
   /**
    * Create a TriviaBot.
@@ -26,6 +27,7 @@ class TriviaBot {
   public constructor(credentials: MemoryCredentials) {
     this.credentials = credentials;
     this.wikiBot = new WikiBot();
+    this.imageBot = new ImageBot();
     this.model = LangChainModel.getInstance();
   }
 
@@ -89,22 +91,6 @@ class TriviaBot {
   }
 
   /**
-   * Generates the topic of a Trivia question based on the provided question and context using the LangChainModel.
-   * @private
-   * @param {string} context - The context to use for generating the topic.
-   * @returns {Promise<string>} - A Promise that resolves to the generated topic.
-   * @memberof TriviaBot
-   * @private
-   */
-  private async generateTopic(context: string): Promise<string> {
-    const examples = "World History, Science, Geography, Pop Culture, Literature, Art, Sports, Music, Film, Food and Drink"
-    const topic = await this.complete(
-      `Use this context to come up with a trivia topic [${context}]. Here are some examples: ${examples}. Respond ONLY with a 1 word TRIVIA topic that the context falls into. Make the topic BROAD so it would apply to other questions.`
-    );
-    return topic;
-  }
-
-  /**
    * Generates an array of incorrect answers to a Trivia question.
    *
    * @private
@@ -162,13 +148,15 @@ class TriviaBot {
   public async generateNewQuestion(): Promise<TriviaQuestion> {
     const { title, content, category } = await this.getRandomWikiPageData();
     const question = await this.generateQuestion(content);
+    const image = await this.imageBot.getCategoryImage(category);
+    console.log(image)
     const answer = await this.generateCorrectAnswer(question, content);
     const incorrectAnswerChoices = await this.generateIncorrectAnswers(
       question,
       answer,
       4
     );
-    const answers = [answer, ...incorrectAnswerChoices]
+    const answers = [answer, ...incorrectAnswerChoices];
     const randomizedChoices = this.randomizeChoices(answers);
 
     const triviaPrompt: TriviaPrompt = {
@@ -187,7 +175,6 @@ class TriviaBot {
     return questionWithId;
   }
 
-
   /**
    * Checks if the user's answer to a Trivia question is correct, updates the user's score, and returns the TriviaResult.
    *
@@ -196,7 +183,10 @@ class TriviaBot {
    * @param {string} answer - The user's answer to the question.
    * @returns {Promise<TriviaResult>} - A Promise that resolves to the TriviaResult object containing the user's score, whether the answer is correct or not, and the correct answer.
    */
-  public async checkAnswer(question: number, answer: string): Promise<TriviaResult> {
+  public async checkAnswer(
+    question: number,
+    answer: string
+  ): Promise<TriviaResult> {
     const triviaAnswer = await getTriviaAnswer(question);
 
     const correct = triviaAnswer.correct_answer === answer;
@@ -220,29 +210,25 @@ class TriviaBot {
    * @returns {Promise<TriviaScore>} - A Promise that resolves to the user's TriviaScore object.
    */
   public async getScore(): Promise<TriviaScore> {
-    const credentials = this.credentials;
-    const { uid } = credentials;
-    const scoreRef = db.doc(`trivia/${uid}`);
-    const doc = await scoreRef.get();
-    const score = doc.data() as TriviaScore;
+    // const credentials = this.credentials;
+    // const { uid } = credentials;
+    // const scoreRef = db.doc(`trivia/${uid}`);
+    // const doc = await scoreRef.get();
+    // const score = doc.data() as TriviaScore;
 
     //initialize values if undefined
-    if (!score) {
-      const newScore: TriviaScore = {
-        correct: 0,
-        incorrect: 0,
-        rating: 1500,
-        total: 0,
-        correctStreak: 0,
-        incorrectStreak: 0,
-        streakType: 0,
-      };
-      await scoreRef.set(newScore);
-      return newScore;
-    }
-    return score;
+    const newScore: TriviaScore = {
+      correct: 0,
+      incorrect: 0,
+      rating: 1500,
+      total: 0,
+      correctStreak: 0,
+      incorrectStreak: 0,
+      streakType: 0,
+    };
+    return newScore;
   }
-  
+
   /**
    * Updates the user's TriviaScore object based on whether their answer to the previous question was correct or not, stores the updated score in the database, and returns it.
    *
@@ -255,27 +241,27 @@ class TriviaBot {
     score: TriviaScore,
     correct: boolean
   ): Promise<TriviaScore> {
-    if (correct) {
-      score.correct += 1;
-      score.correctStreak += 1;
-      score.incorrectStreak = 0;
-      score.streakType = 1;
-      score.rating = Math.max(0, score.rating + score.correctStreak * 10) || 0;
-    } else {
-      score.incorrect += 1;
-      score.correctStreak = 0;
-      score.incorrectStreak += 1;
-      score.streakType = -1;
-      score.rating =
-        Math.max(0, score.rating - score.incorrectStreak * 10) || 0;
-    }
+    // if (correct) {
+    //   score.correct += 1;
+    //   score.correctStreak += 1;
+    //   score.incorrectStreak = 0;
+    //   score.streakType = 1;
+    //   score.rating = Math.max(0, score.rating + score.correctStreak * 10) || 0;
+    // } else {
+    //   score.incorrect += 1;
+    //   score.correctStreak = 0;
+    //   score.incorrectStreak += 1;
+    //   score.streakType = -1;
+    //   score.rating =
+    //     Math.max(0, score.rating - score.incorrectStreak * 10) || 0;
+    // }
 
-    score.total += 1;
+    // score.total += 1;
 
-    const credentials = this.credentials;
-    const { uid } = credentials;
-    const scoreRef = db.doc(`trivia/${uid}`);
-    await scoreRef.set(score);
+    // const credentials = this.credentials;
+    // const { uid } = credentials;
+    // const scoreRef = db.doc(`trivia/${uid}`);
+    // await scoreRef.set(score);
 
     return score;
   }

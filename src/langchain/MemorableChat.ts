@@ -29,23 +29,23 @@ class MemorableChat extends Memorable {
     return chatPrompt;
   }
 
-  public async chainCall(input: string): Promise<string> {
-    const memory = await this.remember();
-    const prompt = this.getPrompt();
-    const chain = new ConversationChain({
-      llm: this.model,
-      memory: memory,
-      prompt: prompt,
-    });
+  // public async chainCall(input: string): Promise<string> {
+  //   const memory = await this.remember();
+  //   const prompt = this.getPrompt();
+  //   const chain = new ConversationChain({
+  //     llm: this.model,
+  //     memory: memory,
+  //     prompt: prompt,
+  //   });
 
-    const res = await chain.call({ input });
-    const response = res.response;
+  //   const res = await chain.call({ input });
+  //   const response = res.response;
 
-    const interaction = { message: input, response }
-    await this.memorize(interaction);
+  //   const interaction = { message: input, response }
+  //   await this.memorize(interaction);
 
-    return response;
-  }
+  //   return response;
+  // }
 }
 
 export { MemorableChat };

@@ -6,7 +6,7 @@ import { OpenAI } from "langchain/llms/openai";
 import { extractCredentials } from "./middleware/credentials";
 import {
   triviaPost,
-} from "./trivia/TriviaApp";
+} from "./bots/trivia/TriviaApp";
 
 dotenv.config();
 
@@ -75,15 +75,15 @@ function handleError(error: Error, res: Response) {
 app.post(
   "/api/memorable/:category",
   async function (req: Request, res: Response) {
-    try {
-      const { content, credentials } = req.body;
-      console.log("credentials", credentials);
-      const memorable = new MemorableChat(credentials);
-      const data = await memorable.chainCall(content);
-      res.status(200).json({ result: data });
-    } catch (error: any) {
-      handleError(error, res);
-    }
+    // try {
+    //   const { content, credentials } = req.body;
+    //   console.log("credentials", credentials);
+    //   const memorable = new MemorableChat(credentials);
+    //   const data = await memorable.chainCall(content);
+    //   res.status(200).json({ result: data });
+    // } catch (error: any) {
+    //   handleError(error, res);
+    // }
   }
 );
 
@@ -93,7 +93,7 @@ app.delete(
     try {
       const { credentials } = req.body;
       const memorable = new MemorableChat(credentials);
-      await memorable.forget();
+      // await memorable.forget();
       res.status(200).json({ result: "success" });
     } catch (error: any) {
       handleError(error, res);
