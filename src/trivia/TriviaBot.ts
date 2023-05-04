@@ -7,7 +7,8 @@ import {
   TriviaQuestion,
   TriviaResult,
   TriviaScore,
-} from "./types";
+} from "./TriviaTypes";
+import { WikiPage } from "./WikiTypes";
 import { storeTriviaQuestion, getTriviaAnswer } from "../supabase/supabase";
 
 /**
@@ -45,13 +46,14 @@ class TriviaBot {
    * @private
    * @returns {Promise<{pageTitle: string, pageData: string}>} The page title and data.
    */
-  private async getRandomWikiPageData(): Promise<{
-    pageTitle: string;
-    pageData: string;
-  }> {
-    const pageTitle = await this.wikiBot.randomPage();
-    const pageData = await this.wikiBot.getPageData(pageTitle);
-    return { pageTitle, pageData };
+  private async getRandomWikiPageData(): Promise<WikiPage> {
+    //1 out of 10 times, get a true random page
+    const random = Math.floor(Math.random() * 10);
+    if (random === 0) {
+      return await this.wikiBot.randomPage();
+    } else {
+      return await this.wikiBot.randomPageFromCategory();
+    }
   }
 
   /**
@@ -158,10 +160,9 @@ class TriviaBot {
    * @returns {Promise<TriviaQuestion>} - A Promise that resolves to the generated TriviaQuestion ID.
    */
   public async generateNewQuestion(): Promise<TriviaQuestion> {
-    const { pageTitle, pageData } = await this.getRandomWikiPageData();
-    const question = await this.generateQuestion(pageData);
-    const topic = await this.generateTopic(pageData);
-    const answer = await this.generateCorrectAnswer(question, pageData);
+    const { title, content, category } = await this.getRandomWikiPageData();
+    const question = await this.generateQuestion(content);
+    const answer = await this.generateCorrectAnswer(question, content);
     const incorrectAnswerChoices = await this.generateIncorrectAnswers(
       question,
       answer,
@@ -172,10 +173,10 @@ class TriviaBot {
 
     const triviaPrompt: TriviaPrompt = {
       question,
-      topic,
+      category,
       correct_answer: answer,
-      context: pageData,
-      title: pageTitle,
+      context: content,
+      title,
       choices: randomizedChoices,
       rating: 100,
     };
@@ -205,7 +206,8 @@ class TriviaBot {
     const result: TriviaResult = {
       score: newScore,
       correct,
-      answer: triviaAnswer.correct_answer,
+      correct_answer: triviaAnswer.correct_answer,
+      answer,
     };
 
     return result;

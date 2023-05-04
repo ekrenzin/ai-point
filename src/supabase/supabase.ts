@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { TriviaAnswer, TriviaPrompt, TriviaQuestion } from "../trivia/types";
+import { TriviaAnswer, TriviaPrompt, TriviaQuestion } from "../trivia/TriviaTypes";
 
 const supabaseUrl = "https://jlkkzxybzwmsagtwacgh.supabase.co";
 const supabaseKey = process.env.SUPABASE_KEY || "MISSING KEY";
@@ -22,7 +22,7 @@ async function storeTriviaQuestion(prompt: TriviaPrompt): Promise<TriviaQuestion
   const question: TriviaQuestion = {
     question: prompt.question,
     context: prompt.context,
-    topic: prompt.topic,
+    category: prompt.category,
     title: prompt.title,
     rating: prompt.rating
   };

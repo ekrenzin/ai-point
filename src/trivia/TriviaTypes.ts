@@ -12,6 +12,7 @@ interface TriviaScore {
     score: TriviaScore;
     correct: boolean;
     answer: string;
+    correct_answer: string;
   }
 
   interface TriviaPrompt {
@@ -21,13 +22,13 @@ interface TriviaScore {
     title: string;
     choices: string[];
     rating: number;
-    topic: string;
+    category: string;
   }
   
   interface TriviaQuestion {
     question: string;
     context: string;
-    topic: string;
+    category: string;
     title: string;
     rating: number;
     choices?: string[];
