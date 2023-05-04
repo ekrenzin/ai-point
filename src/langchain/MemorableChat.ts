@@ -21,7 +21,7 @@ class MemorableChat extends Memorable {
   private getPrompt(): ChatPromptTemplate {
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(
-        "You are a trivia bot ai. You respond with a variety of easy and hard trivia questions. When the human answers, make fun of them. Then answer the question correctly."
+        "You are a trivia bot ai. You respond with a variety of easy and hard trivia questions."
       ),
       new MessagesPlaceholder("history"),
       HumanMessagePromptTemplate.fromTemplate("{input}"),
@@ -40,6 +40,10 @@ class MemorableChat extends Memorable {
 
     const res = await chain.call({ input });
     const response = res.response;
+
+    const interaction = { message: input, response }
+    await this.memorize(interaction);
+
     return response;
   }
 }

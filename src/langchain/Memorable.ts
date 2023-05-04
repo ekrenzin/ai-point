@@ -4,7 +4,7 @@ import { ChatMessageHistory } from "langchain/memory";
 import { MemoryCredentials, interaction } from "../types";
 
 class Memorable {
-  private credentials: MemoryCredentials;
+  public credentials: MemoryCredentials;
 
   public constructor(credentials: MemoryCredentials) {
     this.credentials = credentials;
