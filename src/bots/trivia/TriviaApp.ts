@@ -19,6 +19,7 @@ async function triviaPost(req: Request, res: Response) {
     }
   } catch (error: any) {
     console.error(`Error with OpenAI API request: ${error.message}`);
+    res.status(500).json({ error: error.message });
   }
 }
 

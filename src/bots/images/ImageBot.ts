@@ -12,19 +12,49 @@ class ImageBot {
     this.openai = new OpenAIApi(configuration);
   }
 
-  public async getCategoryImage(category: string) {
+  public async getCategoryImages(
+    category: string,
+    title: string
+  ): Promise<Image[]> {
     const images = await getImageUrls(category);
     if (images.length === 0) {
-      const newImages = await this.createImages(category);
+      const newImages = await this.createImages(category, title);
       await storeImageUrls(newImages);
-      return newImages[0];
+      return newImages;
     }
-    return images[0];
+    return images;
   }
 
-  private async createImages(category: string): Promise<Image[]> {
+  private async createImagePrompt(
+    category: string,
+    title: string
+  ): Promise<string> {
+    const prompt = `Respond with a description of an art peiece about ${category}. Describe the lighting, the colors, the shadows, the texture, the origin.`;
+    const response = await this.openai.createCompletion({
+      model: "text-davinci-003",
+      prompt,
+      max_tokens: 500,
+      temperature: 1,
+    });
+    const output = response.data.choices[0].text || "";
+    const cleanPrompt = `Remove all words that are not adjectives from this: ${output}`;
+    const cleanResponse = await this.openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: cleanPrompt,
+      max_tokens: 500,
+      temperature: 1,
+    });
+    const cleanedOutput = category + title + (cleanResponse.data.choices[0].text || "").replace(/(\r\n|\n|\r)/gm, "") + " - acrylic painting - realism";
+    return cleanedOutput;
+  }
+
+  private async createImages(
+    category: string,
+    title: string
+  ): Promise<Image[]> {
+    const imagePrompt = await this.createImagePrompt(category, title);
     const response = await this.openai.createImage({
-      prompt: "a white siamese cat",
+      prompt: imagePrompt,
       n: 1,
       size: "1024x1024",
     });
@@ -38,6 +68,7 @@ class ImageBot {
         };
       else throw new Error("No image url found");
     });
+    console.log(urls, imagePrompt);
     return urls;
   }
 }

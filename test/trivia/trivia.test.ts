@@ -5,7 +5,7 @@ import { TriviaQuestion } from "../../src/bots/trivia/TriviaTypes";
 
 describe("API - Trivia", function () {
   this.timeout(60000);
-  const newQuestions = 1
+  const newQuestions = 10;
   for (let i = 0; i < newQuestions; i++) {
     let question: TriviaQuestion;
     it("Should create a new trivia question", async function () {

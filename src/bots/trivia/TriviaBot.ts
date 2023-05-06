@@ -8,7 +8,7 @@ import {
   TriviaScore,
 } from "./TriviaTypes";
 import { WikiPage } from "../wiki/WikiTypes";
-import { storeTriviaQuestion, getTriviaAnswer } from "../../supabase/supabase";
+import { storeTriviaQuestion, getTriviaAnswer } from "./supabase";
 import { ImageBot } from "../images/ImageBot";
 
 /**
@@ -148,8 +148,6 @@ class TriviaBot {
   public async generateNewQuestion(): Promise<TriviaQuestion> {
     const { title, content, category } = await this.getRandomWikiPageData();
     const question = await this.generateQuestion(content);
-    const image = await this.imageBot.getCategoryImage(category);
-    console.log(image)
     const answer = await this.generateCorrectAnswer(question, content);
     const incorrectAnswerChoices = await this.generateIncorrectAnswers(
       question,
