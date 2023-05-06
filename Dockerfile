@@ -8,6 +8,10 @@ RUN npm install
 
 COPY . .
 
+# Compile TypeScript to JavaScript
+RUN npm run build
+
 EXPOSE 8080
 
-CMD [ "node", "src/index.js" ]
+# Run the compiled JavaScript code
+CMD [ "node", "dist/index.js" ]
