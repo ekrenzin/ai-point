@@ -11,6 +11,11 @@ class WikiBot {
    */
   public constructor() {}
 
+  public getCategoryList(): string[] {
+    //map the keys to an array
+    const categoryList = Object.keys(categories);
+    return categoryList;
+  }
   /**
    * Fetches a random page title from the English Wikipedia using the MediaWiki API.
    * @returns A Promise that resolves to the title of a random Wikipedia page.
@@ -40,25 +45,28 @@ class WikiBot {
    * @returns A Promise that resolves to the title of a random Wikipedia page.
    * @throws An Error if no random page is found in the response.
    */
-  public async randomPageFromCategory(): Promise<WikiPage> {
+  public async randomPageFromCategory(inputCategory?: string): Promise<WikiPage> {
     try {
-      const randomCategory = this.getRandomCategory();
-      const titles = await this.getTitlesInCategory(randomCategory);
+      const categoryTitle = inputCategory || this.getRandomCategory();
+      //get a random subcategory from the category list where categoryTitle is the parent
+      const unsafeCategories: any = categories;
+      const category = unsafeCategories[categoryTitle][
+        Math.floor(Math.random() * unsafeCategories[categoryTitle].length)
+      ];
+      console.log({inputCategory, category})
+
+      const titles = await this.getTitlesInCategory(category, categoryTitle);
       const randomTitle = this.getRandomTitle(titles);
       const pageData = await this.getPageData(randomTitle);
       const page: WikiPage = {
         url: `https://en.wikipedia.org/wiki/${randomTitle}`,
         title: randomTitle,
         content: pageData,
-        category: randomCategory,
+        category: category,
       };
       return page;
     } catch (err: any) {
-      if (err.message === "No pages found in category") {
-        return await this.randomPage();
-      } else {
-        throw new Error(err.message);
-      }
+      throw new Error(err.message);
     }
   }
 
@@ -67,10 +75,12 @@ class WikiBot {
    * @throws An Error if the categories array is empty.
    */
   private getRandomCategory(): string {
-    if (categories.length === 0) {
+    //get the keys from the categories object
+    const categoryList = Object.keys(categories);
+    if (categoryList.length === 0) {
       throw new Error("No categories available");
     }
-    return categories[Math.floor(Math.random() * categories.length)];
+    return categoryList[Math.floor(Math.random() * categoryList.length)];
   }
 
   /**
@@ -79,7 +89,7 @@ class WikiBot {
    * @returns A Promise that resolves to an array of page titles.
    * @throws An Error if no pages are found in the category.
    */
-  private async getTitlesInCategory(category: string): Promise<string[]> {
+  private async getTitlesInCategory(category: string, categoryTitle: string): Promise<string[]> {
     const apiEndpoint = `https://en.wikipedia.org/w/api.php`;
     const params = {
       action: "query",
@@ -98,7 +108,13 @@ class WikiBot {
       json.query.categorymembers.length === 0
     ) {
       console.warn("No pages found in category, removing category: ", category);
-      categories.splice(categories.indexOf(category), 1);
+      console.log(params)
+      //update the categories.json file categoryTitle is the parent category, remove the category from the list
+      const unsafeCategories: any = categories;
+      unsafeCategories[categoryTitle].splice(
+        unsafeCategories[categoryTitle].indexOf(category),
+        1
+      );
       fs.writeFileSync("./categories.json", JSON.stringify(categories));
       throw new Error("No pages found in category");
     }

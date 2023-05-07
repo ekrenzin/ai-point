@@ -6,16 +6,19 @@ async function triviaPost(req: Request, res: Response) {
     const { method, credentials } = req.body;
     const bot = new TriviaBot(credentials);
     if (method === "question") {
-      const question = await bot.generateNewQuestion();
+      const { category } = req.body;
+      const question = await bot.generateNewQuestion(category);
       res.status(200).json({ question });
     } else if (method === "answer") {
-      const answer = req.body.answer;
-      const question = req.body.question;
+      const { question, answer } = req.body;
       const result = await bot.checkAnswer(question, answer);
       res.status(200).json({ result });
     } else if (method === "score") {
       const score = await bot.getScore();
       res.status(200).json({ result: score });
+    } else if (method === "categories") {
+      const categories = bot.getCategories();
+      res.status(200).json({ categories });
     }
   } catch (error: any) {
     console.error(`Error with OpenAI API request: ${error.message}`);

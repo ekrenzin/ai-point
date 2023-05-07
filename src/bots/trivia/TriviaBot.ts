@@ -48,7 +48,12 @@ class TriviaBot {
    * @private
    * @returns {Promise<{pageTitle: string, pageData: string}>} The page title and data.
    */
-  private async getRandomWikiPageData(): Promise<WikiPage> {
+  private async getRandomWikiPageData(
+    inputCategory?: string
+  ): Promise<WikiPage> {
+    if (inputCategory)
+      return await this.wikiBot.randomPageFromCategory(inputCategory);
+
     //1 out of 10 times, get a true random page
     const random = Math.floor(Math.random() * 10);
     if (random === 0) {
@@ -85,7 +90,7 @@ class TriviaBot {
     context: string
   ): Promise<string> {
     const answer = await this.complete(
-      `Respond with the answer to ${question}. Respond ONLY with the answer. Use this context to answer [${context}].`
+      `Respond with a brief answer to ${question}. (maximum 10 words) Respond ONLY with the answer. Use this context to answer [${context}].`
     );
     return answer;
   }
@@ -105,9 +110,9 @@ class TriviaBot {
     numberOfChoices: number
   ): Promise<string[]> {
     const wrongAnswer = await this.complete(
-      `Respond with ${
+      `Respond with brief ${
         numberOfChoices - 1
-      } incorrect answers to ${question} that is different from current answer: ${answer}. The answers should be in the same format as the correct answer. wrap each answer like so #ANSWER# ___  #END ANSWER#.`
+      } incorrect answers to ${question} that is different from current answer: ${answer}. (maximum 10 words) The answers should be in the same format as the correct answer (${answer}). wrap each answer like so #ANSWER# ___  #END ANSWER#.`
     );
     const wrongAnswers = wrongAnswer.match(/#ANSWER#(.*?)#END ANSWER#/g);
 
@@ -145,32 +150,47 @@ class TriviaBot {
    * @public
    * @returns {Promise<TriviaQuestion>} - A Promise that resolves to the generated TriviaQuestion ID.
    */
-  public async generateNewQuestion(): Promise<TriviaQuestion> {
-    const { title, content, category } = await this.getRandomWikiPageData();
-    const question = await this.generateQuestion(content);
-    const answer = await this.generateCorrectAnswer(question, content);
-    const incorrectAnswerChoices = await this.generateIncorrectAnswers(
-      question,
-      answer,
-      4
-    );
-    const answers = [answer, ...incorrectAnswerChoices];
-    const randomizedChoices = this.randomizeChoices(answers);
+  public async generateNewQuestion(
+    inputCategory?: string,
+    numberOfTries = 0
+  ): Promise<TriviaQuestion> {
+    try {
+      console.log("Generating new question: ", inputCategory);
+      const { title, content, category } = await this.getRandomWikiPageData(
+        inputCategory
+      );
+      const question = await this.generateQuestion(content);
+      const answer = await this.generateCorrectAnswer(question, content);
+      const incorrectAnswerChoices = await this.generateIncorrectAnswers(
+        question,
+        answer,
+        4
+      );
+      const answers = [answer, ...incorrectAnswerChoices];
+      const randomizedChoices = this.randomizeChoices(answers);
 
-    const triviaPrompt: TriviaPrompt = {
-      question,
-      category,
-      correct_answer: answer,
-      context: content,
-      title,
-      choices: randomizedChoices,
-      rating: 100,
-    };
+      const triviaPrompt: TriviaPrompt = {
+        question,
+        category,
+        correct_answer: answer,
+        context: content,
+        title,
+        choices: randomizedChoices,
+        rating: 100,
+      };
 
-    const questionWithId = await storeTriviaQuestion(triviaPrompt);
-    questionWithId.choices = randomizedChoices;
+      const questionWithId = await storeTriviaQuestion(triviaPrompt);
+      questionWithId.choices = randomizedChoices;
 
-    return questionWithId;
+      return questionWithId;
+    } catch (err) {
+      numberOfTries++;
+      if (numberOfTries > 5) {
+        throw new Error("Unable to generate question");
+      } else {
+        return await this.generateNewQuestion(inputCategory, numberOfTries);
+      }
+    }
   }
 
   /**
@@ -225,6 +245,10 @@ class TriviaBot {
       streakType: 0,
     };
     return newScore;
+  }
+
+  public getCategories(): string[] {
+    return this.wikiBot.getCategoryList();
   }
 
   /**
