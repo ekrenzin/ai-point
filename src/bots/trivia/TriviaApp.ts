@@ -3,8 +3,8 @@ import { TriviaBot } from "./TriviaBot";
 
 async function triviaPost(req: Request, res: Response) {
   try {
-    const { method, credentials } = req.body;
-    const bot = new TriviaBot(credentials);
+    const { method, auth } = req.body;
+    const bot = new TriviaBot(auth);
     if (method === "question") {
       const { category } = req.body;
       const question = await bot.generateNewQuestion(category);
@@ -21,7 +21,7 @@ async function triviaPost(req: Request, res: Response) {
       res.status(200).json({ categories });
     }
   } catch (error: any) {
-    console.error(`Error with OpenAI API request: ${error.message}`);
+    console.error(`Error with TRIVIA API request: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 }

@@ -10,7 +10,7 @@ interface TriviaScore {
 }
 
 interface TriviaResult {
-  score: TriviaScore;
+  score?: TriviaScore;
   correct: boolean;
   answer: string;
   correct_answer: string;

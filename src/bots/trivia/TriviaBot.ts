@@ -1,4 +1,3 @@
-
 import { WikiBot } from "../wiki/WikiBot";
 import { LangChainModel } from "../../langchain/Model";
 import {
@@ -9,7 +8,12 @@ import {
   TriviaCredentials,
 } from "./TriviaTypes";
 import { WikiPage } from "../wiki/WikiTypes";
-import { storeTriviaQuestion, getTriviaAnswer , getTriviaScore, updateTriviaScore} from "./supabase";
+import {
+  storeTriviaQuestion,
+  getTriviaAnswer,
+  getTriviaScore,
+  updateTriviaScore,
+} from "./supabase";
 import { ImageBot } from "../images/ImageBot";
 
 /**
@@ -23,10 +27,10 @@ class TriviaBot {
 
   /**
    * Create a TriviaBot.
-   * @param {MemoryCredentials} credentials - The credentials for the bot.
+   * @param {MemoryCredentials} auth - The credentials for the bot.
    */
-  public constructor(credentials: TriviaCredentials) {
-    this.credentials = credentials;
+  public constructor(auth: TriviaCredentials) {
+    this.credentials = auth;
     this.wikiBot = new WikiBot();
     this.imageBot = new ImageBot();
     this.model = LangChainModel.getInstance();
@@ -209,19 +213,26 @@ class TriviaBot {
     answer: string
   ): Promise<TriviaResult> {
     const triviaAnswer = await getTriviaAnswer(question);
-
     const correct = triviaAnswer.correct_answer === answer;
+    if (this.credentials && this.credentials.uid) {
+      const oldScore = await this.getScore();
+      const newScore = await this.updateScore(oldScore, correct);
 
-    const oldScore = await this.getScore();
-    const newScore = await this.updateScore(oldScore, correct);
-    const result: TriviaResult = {
-      score: newScore,
-      correct,
-      correct_answer: triviaAnswer.correct_answer,
-      answer,
-    };
+      const result: TriviaResult = {
+        score: newScore,
+        correct,
+        correct_answer: triviaAnswer.correct_answer,
+        answer,
+      };
 
-    return result;
+      return result;
+    } else {
+      return {
+        correct,
+        correct_answer: triviaAnswer.correct_answer,
+        answer,
+      };
+    }
   }
 
   /**
@@ -234,6 +245,7 @@ class TriviaBot {
     const credentials = this.credentials;
     const { uid } = credentials;
     const score = await getTriviaScore(uid);
+    console.log(score)
     return score;
   }
 
