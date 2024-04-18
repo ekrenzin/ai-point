@@ -166,6 +166,8 @@ class TriviaBot {
       const { title, content, category } = await this.getRandomWikiPageData(
         inputCategory
       );
+      console.log(title, content, category);
+      console.log("got page data");
       const question = await this.generateQuestion(content);
       const answer = await this.generateCorrectAnswer(question, content);
       const incorrectAnswerChoices = await this.generateIncorrectAnswers(
@@ -245,7 +247,7 @@ class TriviaBot {
     const credentials = this.credentials;
     const { uid } = credentials;
     const score = await getTriviaScore(uid);
-    console.log(score)
+    console.log(score);
     return score;
   }
 

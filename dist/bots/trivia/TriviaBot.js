@@ -136,6 +136,8 @@ class TriviaBot {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { title, content, category } = yield this.getRandomWikiPageData(inputCategory);
+                console.log(title, content, category);
+                console.log("got page data");
                 const question = yield this.generateQuestion(content);
                 const answer = yield this.generateCorrectAnswer(question, content);
                 const incorrectAnswerChoices = yield this.generateIncorrectAnswers(question, answer, 4);
