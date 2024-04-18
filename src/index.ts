@@ -33,4 +33,4 @@ try {
   app.listen(3000);
 }
 
-export { app };
+export default app;
