@@ -5,15 +5,16 @@ import { storeTriviaAnswer } from "./answers";
 export { storeTriviaQuestion, getTriviaQuestions };
 
 async function storeTriviaQuestion(
-    prompt: TriviaPrompt
-  ): Promise<TriviaQuestion> {
-    const question: TriviaQuestion = {
-      question: prompt.question,
-      context: prompt.context,
-      category: prompt.category,
-      title: prompt.title,
-      rating: prompt.rating,
-    };
+  prompt: TriviaPrompt
+): Promise<TriviaQuestion> {
+  const question: TriviaQuestion = {
+    question: prompt.question,
+    context: prompt.context,
+    category: prompt.category,
+    title: prompt.title,
+    rating: prompt.rating,
+  };
+  try {
     const { error, data } = await supabase
       .from("questions")
       .insert([question])
@@ -22,12 +23,12 @@ async function storeTriviaQuestion(
       console.error(error);
       return question;
     }
-  
+
     if (!data) {
       console.error("No data returned from Supabase");
       return question;
     }
-  
+
     const questionResult: any = data[0];
     const id = questionResult.id;
     const answer: TriviaAnswer = {
@@ -35,14 +36,19 @@ async function storeTriviaQuestion(
       choices: prompt.choices,
       correct_answer: prompt.correct_answer,
     };
-  
+
     await storeTriviaAnswer(answer);
-  
+
     question.id = id;
     return question;
+  } catch (error: any) {
+    console.error(`Error storing trivia question: ${error.message}`);
+    return question;
   }
+}
 
 async function getTriviaQuestions(): Promise<TriviaPrompt[] | null> {
+  try {
     const { data, error } = await supabase.from("questions").select("*");
     if (error) {
       console.error(error);
@@ -50,5 +56,8 @@ async function getTriviaQuestions(): Promise<TriviaPrompt[] | null> {
     }
     const questions = data as TriviaPrompt[];
     return questions;
+  } catch (error: any) {
+    console.error(`Error getting trivia questions: ${error.message}`);
+    return null;
   }
-  
+}

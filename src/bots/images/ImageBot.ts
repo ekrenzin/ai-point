@@ -31,7 +31,7 @@ class ImageBot {
   ): Promise<string> {
     const prompt = `Respond with a description of an art peiece about ${category}. Describe the lighting, the colors, the shadows, the texture, the origin.`;
     const response = await this.openai.createCompletion({
-      model: "text-davinci-003",
+      model: "gpt-4-turbo",
       prompt,
       max_tokens: 500,
       temperature: 1,
@@ -39,12 +39,16 @@ class ImageBot {
     const output = response.data.choices[0].text || "";
     const cleanPrompt = `Remove all words that are not adjectives from this: ${output}`;
     const cleanResponse = await this.openai.createCompletion({
-      model: "text-davinci-003",
+      model: "gpt-4-turbo",
       prompt: cleanPrompt,
       max_tokens: 500,
       temperature: 1,
     });
-    const cleanedOutput = category + title + (cleanResponse.data.choices[0].text || "").replace(/(\r\n|\n|\r)/gm, "") + " - acrylic painting - realism";
+    const cleanedOutput =
+      category +
+      title +
+      (cleanResponse.data.choices[0].text || "").replace(/(\r\n|\n|\r)/gm, "") +
+      " - acrylic painting - realism";
     return cleanedOutput;
   }
 
