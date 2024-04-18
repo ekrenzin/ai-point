@@ -166,15 +166,17 @@ class TriviaBot {
       const { title, content, category } = await this.getRandomWikiPageData(
         inputCategory
       );
-      console.log(title, content, category);
       console.log("got page data");
       const question = await this.generateQuestion(content);
+      console.log("generated question")
       const answer = await this.generateCorrectAnswer(question, content);
+      console.log("generated correct answer")
       const incorrectAnswerChoices = await this.generateIncorrectAnswers(
         question,
         answer,
         4
       );
+      console.log("generated incorrect answers")
       const answers = [answer, ...incorrectAnswerChoices];
       const randomizedChoices = this.randomizeChoices(answers);
 

@@ -34,7 +34,7 @@ class ImageBot {
         return __awaiter(this, void 0, void 0, function* () {
             const prompt = `Respond with a description of an art peiece about ${category}. Describe the lighting, the colors, the shadows, the texture, the origin.`;
             const response = yield this.openai.createCompletion({
-                model: "gpt-4-turbo",
+                model: "gpt-3.5-turbo",
                 prompt,
                 max_tokens: 500,
                 temperature: 1,
@@ -42,7 +42,7 @@ class ImageBot {
             const output = response.data.choices[0].text || "";
             const cleanPrompt = `Remove all words that are not adjectives from this: ${output}`;
             const cleanResponse = yield this.openai.createCompletion({
-                model: "gpt-4-turbo",
+                model: "gpt-3.5-turbo",
                 prompt: cleanPrompt,
                 max_tokens: 500,
                 temperature: 1,

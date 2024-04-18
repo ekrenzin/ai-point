@@ -1,16 +1,15 @@
-import { OpenAI } from 'langchain/llms/openai'
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai'
-import dotenv from 'dotenv';
+import { OpenAI } from "langchain/llms/openai";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import dotenv from "dotenv";
 dotenv.config();
-
 
 /**
  * The LangChainModel class acts as a singleton wrapper around the OpenAI model.
  * It ensures there is only one instance of the model running and provides access to it.
  */
 class LangChainModel {
-  private static instance: LangChainModel
-  private model: OpenAI
+  private static instance: LangChainModel;
+  private model: OpenAI;
   private embeddings: OpenAIEmbeddings;
 
   /**
@@ -18,10 +17,14 @@ class LangChainModel {
    * @private
    */
   private constructor() {
-    const model = new OpenAI({ temperature: 0.5, modelName: 'text-davinci-003', maxTokens: 1000 })
-    const embeddings = new OpenAIEmbeddings({ })
-    this.model = model
-    this.embeddings = embeddings
+    const model = new OpenAI({
+      temperature: 0.5,
+      modelName: "gpt-3.5-turbo",
+      maxTokens: 1000,
+    });
+    const embeddings = new OpenAIEmbeddings({});
+    this.model = model;
+    this.embeddings = embeddings;
   }
 
   /**
@@ -30,7 +33,7 @@ class LangChainModel {
    */
   public static init(): void {
     if (!LangChainModel.instance) {
-      LangChainModel.instance = new LangChainModel()
+      LangChainModel.instance = new LangChainModel();
     }
   }
 
@@ -41,8 +44,8 @@ class LangChainModel {
    * @public
    */
   public static getInstance(): LangChainModel {
-    LangChainModel.validateLangChainModel()
-    return LangChainModel.instance
+    LangChainModel.validateLangChainModel();
+    return LangChainModel.instance;
   }
 
   /**
@@ -52,8 +55,8 @@ class LangChainModel {
    * @public
    */
   public static getModel(): OpenAI {
-    LangChainModel.validateLangChainModel()
-    return LangChainModel.instance.model
+    LangChainModel.validateLangChainModel();
+    return LangChainModel.instance.model;
   }
 
   /**
@@ -61,10 +64,10 @@ class LangChainModel {
    * Throws an error if the instance has not been initialized.
    * @returns {OpenAIEmbeddings} The OpenAI embeddings instance
    * @public
-    */
+   */
   public static getEmbeddings(): OpenAIEmbeddings {
-    LangChainModel.validateLangChainModel()
-    return LangChainModel.instance.embeddings
+    LangChainModel.validateLangChainModel();
+    return LangChainModel.instance.embeddings;
   }
 
   /**
@@ -74,8 +77,8 @@ class LangChainModel {
    * @public
    */
   public async complete(prompt: string): Promise<string> {
-    const completion = await this.model.call(prompt)
-    return completion
+    const completion = await this.model.call(prompt);
+    return completion;
   }
 
   /**
@@ -85,8 +88,9 @@ class LangChainModel {
    * @private
    */
   private static validateLangChainModel(): void {
-    if (!LangChainModel.instance) throw new Error('LangChainModel instance not initialized');
+    if (!LangChainModel.instance)
+      throw new Error("LangChainModel instance not initialized");
   }
 }
 
-export { LangChainModel }
+export { LangChainModel };

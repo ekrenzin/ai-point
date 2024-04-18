@@ -27,7 +27,11 @@ class LangChainModel {
      * @private
      */
     constructor() {
-        const model = new openai_1.OpenAI({ temperature: 0.5, modelName: 'text-davinci-003', maxTokens: 1000 });
+        const model = new openai_1.OpenAI({
+            temperature: 0.5,
+            modelName: "gpt-3.5-turbo",
+            maxTokens: 1000,
+        });
         const embeddings = new openai_2.OpenAIEmbeddings({});
         this.model = model;
         this.embeddings = embeddings;
@@ -66,7 +70,7 @@ class LangChainModel {
      * Throws an error if the instance has not been initialized.
      * @returns {OpenAIEmbeddings} The OpenAI embeddings instance
      * @public
-      */
+     */
     static getEmbeddings() {
         LangChainModel.validateLangChainModel();
         return LangChainModel.instance.embeddings;
@@ -91,7 +95,7 @@ class LangChainModel {
      */
     static validateLangChainModel() {
         if (!LangChainModel.instance)
-            throw new Error('LangChainModel instance not initialized');
+            throw new Error("LangChainModel instance not initialized");
     }
 }
 exports.LangChainModel = LangChainModel;

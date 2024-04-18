@@ -4,6 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "type": "commonjs",
+  "precommit": [
+    "build"
+  ],
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha --recursive --exit",
     "test:memory": "cross-env NODE_ENV=test mocha test/memory/ --exit",
